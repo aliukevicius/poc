@@ -41,6 +41,9 @@ These are the core types available out-of-the-box.
 | `float` | `primitive` | `number` | Floating point numbers |
 | `boolean` | `primitive` | `boolean` | True/False |
 | `reference` | `primitive` | `string` | Stores the ID of the referenced item |
+| `date` | `primitive` | `string` | ISO 8601 Date (YYYY-MM-DD) |
+| `time` | `primitive` | `string` | ISO 8601 Time (HH:mm:ss) |
+| `datetime` | `primitive` | `string` | ISO 8601 Date & Time |
 
 ### Composite Type Example: Currency Amount
 ```json
@@ -51,6 +54,21 @@ These are the core types available out-of-the-box.
   "properties": [
     { "name": "currency", "type": "string", "label": "Currency Code" },
     { "name": "amount", "type": "float", "label": "Amount" }
+  ]
+}
+```
+
+### Composite Type Example: Media Asset
+```json
+{
+  "id": "media_object",
+  "label": "Media Asset",
+  "storage": "object",
+  "properties": [
+    { "name": "url", "type": "string", "label": "URL" },
+    { "name": "mimeType", "type": "string", "label": "MIME Type" },
+    { "name": "size", "type": "integer", "label": "Size (bytes)" },
+    { "name": "altText", "type": "string", "label": "Alt Text" }
   ]
 }
 ```
@@ -69,6 +87,8 @@ A `Field` defines the usage of a `DataType` within a specific **Content Type**. 
   "name": "field_name",          // Storage Key
   "label": "Field Label",        // Display Label
   "type": "type_id",             // Reference to DataType
+  "isList": boolean,             // Default: false. If true, stores an array of 'type'
+  "enumOptions": ["A", "B"],     // Optional: Restricts values to this set (if type is primitive)
 
   // --- Storage & Integrity ---
   "required": boolean,           // Default: false
@@ -114,6 +134,28 @@ Uses the `currency_amount` composite type defined above.
   "type": "currency_amount",
   "required": true,
   "defaultValue": { "currency": "USD", "amount": 0 },
+}
+```
+
+### 4. List of Strings (Tags)
+```json
+{
+  "name": "tags",
+  "label": "Tags",
+  "type": "string",
+  "isList": true,
+  "required": false
+}
+```
+
+### 5. Enum Field (Status)
+```json
+{
+  "name": "status",
+  "label": "Status",
+  "type": "string",
+  "enumOptions": ["Draft", "Published", "Archived"],
+  "required": true
 }
 ```
 
