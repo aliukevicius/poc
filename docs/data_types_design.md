@@ -88,7 +88,10 @@ A `Field` defines the usage of a `DataType` within a specific **Content Type**. 
   "label": "Field Label",        // Display Label
   "type": "type_id",             // Reference to DataType
   "isList": boolean,             // Default: false. If true, stores an array of 'type'
-  "enumOptions": ["A", "B"],     // Optional: Restricts values to this set (if type is primitive)
+  "enumOptions": [               // Optional: Restricts values to this set (if type is primitive)
+    { "value": "A", "label": "Option A" },
+    { "value": "B", "label": "Option B" }
+  ],
 
   // --- Storage & Integrity ---
   "required": boolean,           // Default: false
@@ -154,7 +157,11 @@ Uses the `currency_amount` composite type defined above.
   "name": "status",
   "label": "Status",
   "type": "string",
-  "enumOptions": ["Draft", "Published", "Archived"],
+  "enumOptions": [
+    { "value": "draft", "label": "Draft" },
+    { "value": "published", "label": "Published" },
+    { "value": "archived", "label": "Archived" }
+  ],
   "required": true
 }
 ```

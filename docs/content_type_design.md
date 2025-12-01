@@ -101,8 +101,12 @@ Here is a complete example of how an "Article" content type would be described i
       "isList": false,
       "required": true,
       "unique": false,
-      "defaultValue": "Draft",
-      "enumOptions": ["Draft", "Published", "Archived"],
+      "defaultValue": "draft",
+      "enumOptions": [
+        { "value": "draft", "label": "Draft" },
+        { "value": "published", "label": "Published" },
+        { "value": "archived", "label": "Archived" }
+      ],
       "targetContentType": null
     },
     {
