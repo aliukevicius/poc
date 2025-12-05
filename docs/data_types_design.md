@@ -5,7 +5,7 @@ This document defines the structure for **Data Types** and **Fields** within the
 It follows the **Separation of Concerns** principle:
 1.  **Storage**: Defined by `DataType` (structure) and `Field` (integrity/constraints).
 2.  **Input**: Defined by `Field` (default values).
-3.  **Display**: Defined by Content Type views (list/single) - *to be detailed in a separate design*.
+3.  **Display**: Defined by [Output Types](./output_types.md) (Widgets & Views).
 
 ## 1. Data Type Definition
 A `DataType` defines the **storage structure** of a value. It does *not* define how it is input or displayed, nor does it define usage-specific constraints (like "required").
