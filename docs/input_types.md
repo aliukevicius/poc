@@ -1,23 +1,87 @@
-# Input Types
+# Input Types Design
 
-Input types is all about how the information is inputed by the user for a give content type.
+## Overview
+**Input Types** define the technical specifications for how data is accepted by the system's API.
+This document focuses on the **Transmission** and **Validation** of data, ensuring it conforms to the underlying **Data Type** structure before storage.
 
-Each content type can have multiple input types. Input types don't need to have all the fields that are defined in the content type, but it must always have the required fields.
+> **Note**: User Interface components (Input Widgets) are defined in [Output Types](./output_types.md), as they are considered a form of data presentation (Edit Views).
 
-Each field in the input type can have validation rules. There rules define if the data for that given field is valid or not. If data is not valid, the user will get an error message.
+---
 
-Each input type will have its own input format. Single input type can support multiple input formats. For example:
-- Form data
-- form url encoded
-- multipart/form-data
-- json
-- xml
-- yaml
-- csv
-- tsv
+## 1. Input Formats (API)
+Input Formats define the serialization methods accepted by the API for creating or updating records.
 
+### Supported Formats
+The system supports content negotiation via the `Content-Type` header.
 
-Certain input types can allow you to create nultiple records for a given content type at once. This should be configurable. Either that input type supports it or not.
-Each input type will also have it dedicated API endpoint.
+#### 1. JSON (`application/json`)
+*   **Usage**: Default format for structured data.
+*   **Structure**:
+    *   Keys must match the `field.name` defined in the Content Type.
+    *   Values must match the `DataType` primitive (e.g., string, number, boolean).
+    *   Composite types are represented as nested JSON objects.
+*   **Example**:
+    ```json
+    {
+      "title": "My Article",
+      "status": "published",
+      "price": {
+        "currency": "USD",
+        "amount": 19.99
+      }
+    }
+    ```
 
-Each input type belongs to a content type.
+#### 2. Multipart Form Data (`multipart/form-data`)
+*   **Usage**: Mandatory for **Media Asset** uploads.
+*   **Structure**:
+    *   Simple fields are sent as form parts.
+    *   Files are sent as binary parts with filename metadata.
+    *   Nested objects (like `price`) should use bracket notation (e.g., `price[amount]`) or be sent as a stringified JSON part, depending on implementation preference.
+
+#### 3. CSV / TSV (`text/csv`)
+*   **Usage**: Bulk import of flat data.
+*   **Limitations**:
+    *   Best for simple, flat Content Types.
+    *   Complex/Nested data requires specific flattening conventions (e.g., `price.amount`).
+
+---
+
+## 2. Validation Enforcement
+Validation ensures data integrity. While rules are defined in the **Content Type** (refer to [Validation Rules](./validation_rules.md)), the **Input Type** layer is responsible for enforcing them during the API request lifecycle.
+
+### Validation Process
+1.  **Format Check**: Ensure payload matches the `Content-Type` (e.g., valid JSON).
+2.  **Type Check**: Ensure values match the target `DataType` (e.g., "123" is a valid string, but `123` is needed for an integer field).
+3.  **Constraint Check**: Apply `validation_rules` (e.g., `required`, `min`, `regex`).
+4.  **Integrity Check**: Check database constraints (e.g., `unique`, `reference` existence).
+
+### Error Response
+If validation fails, the API returns a `422 Unprocessable Entity` with a structured error object.
+The structure supports multiple errors per field, as a single value might fail multiple validation rules.
+```json
+{
+  "error": "ValidationError",
+  "fields": {
+    "email": [
+      "Invalid email format",
+      "Email domain not allowed"
+    ],
+    "age": [
+      "Must be at least 18"
+    ]
+  }
+}
+```
+
+---
+
+## 3. API Endpoints
+Standard endpoints for data input:
+
+| Method | Endpoint | Description | Supported Formats |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/content/:type_id` | Create a single record | JSON, Multipart |
+| `POST` | `/api/content/:type_id/bulk` | Create multiple records | JSON Array, CSV |
+| `PUT` | `/api/content/:type_id/:id` | Replace a record | JSON, Multipart |
+| `PATCH` | `/api/content/:type_id/:id` | Partially update a record | JSON |
