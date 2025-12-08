@@ -1,0 +1,61 @@
+[
+  {
+    "id": "string",
+    "label": "Text",
+    "storage": "primitive",
+    "primitiveType": "string"
+  },
+  {
+    "id": "integer",
+    "label": "Integer",
+    "storage": "primitive",
+    "primitiveType": "integer"
+  },
+  {
+    "id": "float",
+    "label": "Decimal",
+    "storage": "primitive",
+    "primitiveType": "number"
+  },
+  {
+    "id": "boolean",
+    "label": "Boolean",
+    "storage": "primitive",
+    "primitiveType": "boolean"
+  },
+  {
+    "id": "enum",
+    "label": "Enum",
+    "storage": "primitive",
+    "primitiveType": "string",
+    "description": "Stores one of the pre-defined values"
+  },
+  {
+    "id": "reference",
+    "label": "Reference",
+    "storage": "primitive",
+    "primitiveType": "string",
+    "description": "Stores the ID of the referenced item"
+  },
+  {
+    "id": "date",
+    "label": "Date",
+    "storage": "primitive",
+    "primitiveType": "string",
+    "description": "ISO 8601 Date (YYYY-MM-DD)"
+  },
+  {
+    "id": "time",
+    "label": "Time",
+    "storage": "primitive",
+    "primitiveType": "string",
+    "description": "ISO 8601 Time (HH:mm:ss)"
+  },
+  {
+    "id": "datetime",
+    "label": "Date & Time",
+    "storage": "primitive",
+    "primitiveType": "string",
+    "description": "ISO 8601 Date & Time"
+  }
+]
