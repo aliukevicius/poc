@@ -2,101 +2,71 @@
 
 ## Overview
 This document defines the structure for **Data Types** and **Fields** within the Dynamic Content Type system.
+
 It follows the **Separation of Concerns** principle:
-1.  **Storage**: Defined by `DataType` (structure) and `Field` (integrity/constraints).
+1.  **Storage**: Defined by `DataType` (primitive structure) and `Field` (nesting & integrity).
 2.  **Input**: Defined by `Field` (default values).
 3.  **Display**: Defined by [Output Types](./output_types.md) (Widgets & Views).
 
 ## 1. Data Type Definition
-A `DataType` defines the **storage structure** of a value. It does *not* define how it is input or displayed, nor does it define usage-specific constraints (like "required").
+A `DataType` defines the **primitive storage structure** of a value.
+**Crucially, Data Types are system-provided only. No custom or composite Data Types can be created.**
 
 ### JSON Structure
 ```json
 {
   "id": "unique_type_id",
   "label": "Human Readable Name",
-  "storage": "primitive" | "object",
-
-  // IF storage == "primitive"
-  "primitiveType": "string" | "number" | "boolean" | "integer",
-
-  // IF storage == "object" (Composite Type)
-  "properties": [
-    {
-      "name": "key",
-      "type": "type_id", // Reference to another DataType
-      "label": "Property Label"
-    }
-  ]
+  "primitiveType": "string" | "number" | "boolean" | "integer"
 }
 ```
 
 ### Standard Data Types
 These are the core types available out-of-the-box.
 
-| ID | Storage | Primitive Type | Notes |
-| :--- | :--- | :--- | :--- |
-| `string` | `primitive` | `string` | Basic text |
-| `integer` | `primitive` | `integer` | Whole numbers |
-| `float` | `primitive` | `number` | Floating point numbers |
-| `boolean` | `primitive` | `boolean` | True/False |
-| `reference` | `primitive` | `string` | Stores the ID of the referenced item |
-| `date` | `primitive` | `string` | ISO 8601 Date (YYYY-MM-DD) |
-| `time` | `primitive` | `string` | ISO 8601 Time (HH:mm:ss) |
-| `datetime` | `primitive` | `string` | ISO 8601 Date & Time |
-
-### Composite Type Example: Currency Amount
-```json
-{
-  "id": "currency_amount",
-  "label": "Currency Amount",
-  "storage": "object",
-  "properties": [
-    { "name": "currency", "type": "string", "label": "Currency Code" },
-    { "name": "amount", "type": "float", "label": "Amount" }
-  ]
-}
-```
-
-### Composite Type Example: Media Asset
-```json
-{
-  "id": "media_object",
-  "label": "Media Asset",
-  "storage": "object",
-  "properties": [
-    { "name": "url", "type": "string", "label": "URL" },
-    { "name": "mimeType", "type": "string", "label": "MIME Type" },
-    { "name": "size", "type": "integer", "label": "Size (bytes)" },
-    { "name": "altText", "type": "string", "label": "Alt Text" }
-  ]
-}
-```
+| ID          | Primitive Type | Notes                                |
+| :---------- | :------------- | :----------------------------------- |
+| `string`    | `string`       | Basic text                           |
+| `integer`   | `integer`      | Whole numbers                        |
+| `float`     | `number`       | Floating point numbers               |
+| `boolean`   | `boolean`      | True/False                           |
+| `reference` | `string`       | Stores the ID of the referenced item |
+| `enum`      | `string`       | Stored one of the pre-defined values |
+| `date`      | `string`       | ISO 8601 Date (YYYY-MM-DD)           |
+| `time`      | `string`       | ISO 8601 Time (HH:mm:ss)             |
+| `datetime`  | `string`       | ISO 8601 Date & Time                 |
 
 ---
 
 ## 2. Field Definition
-A `Field` defines the usage of a `DataType` within a specific **Content Type**. It handles:
-1.  **Binding**: Linking a name to a DataType.
-2.  **Integrity (Storage)**: Validation rules that ensure data consistency (Required, Unique).
-3.  **Input Configuration**: Default values.
+A `Field` defines the usage of a `DataType` within a specific **Content Type**.
+Fields can be **Simple** (mapping to a primitive Data Type) or **Nested** (grouping other fields).
+
+### Field Types
+Fields are now categorized into two conceptual types:
+1.  **System Fields**: Pre-configured fields provided by the system (e.g., `media_object`). These typically use a `group` structure behind the scenes but might be presented as a single unit.
+2.  **User Fields**: Fields created by the user to structure their content.
 
 ### JSON Structure
 ```json
 {
   "name": "field_name",          // Storage Key
   "label": "Field Label",        // Display Label
-  "type": "type_id",             // Reference to DataType
-  "isList": boolean,             // Default: false. If true, stores an array of 'type'
-  "enumOptions": [               // Optional: Restricts values to this set (if type is primitive)
-    { "value": "A", "label": "Option A" },
-    { "value": "B", "label": "Option B" }
+  "type": "type_id" | "group",   // Reference to DataType OR "group" for nesting
+  "isList": boolean,             // Default: false.
+
+  // --- For Nested Fields (type == "group") ---
+  "subFields": [                 // Array of Field definitions. REQUIRED if type == "group"
+    // Recursive Field Definitions (Currently limited to 1 level of nesting)
   ],
 
-  // --- Storage & Integrity ---
+  // --- Storage & Integrity (Primitives) ---
   "required": boolean,           // Default: false
-  "unique": boolean,             // Default: false
+  "unique": boolean,             // Default: false. Enforces uniqueness across the Collection.
   "targetContentType": "id",     // REQUIRED if type == "reference"
+  "enumOptions": [               // Optional: Restricts values. ONLY available if type == "enum"
+    { "value": "A", "label": "Option A" }
+  ],
 
   // --- Input Configuration ---
   "defaultValue": any,           // Default value for new records
@@ -112,63 +82,87 @@ A `Field` defines the usage of a `DataType` within a specific **Content Type**. 
   "label": "Title",
   "type": "string",
   "required": true,
-  "unique": false,
+  "unique": true
 }
 ```
 
-### 2. Reference Field
-Links to another Content Type (e.g., an Author).
+### 2. Manual Nested Field (Address)
+A user-defined group of fields. Note that sub-fields have the full Field structure.
 ```json
 {
-  "name": "author_id",
-  "label": "Author",
-  "type": "reference",
-  "targetContentType": "person",
-  "required": true,
+  "name": "address",
+  "label": "Address",
+  "type": "group",
+  "subFields": [
+    {
+      "name": "street",
+      "label": "Street",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "city",
+      "label": "City",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "zip",
+      "label": "Zip Code",
+      "type": "string",
+      "required": true
+    }
+  ]
 }
 ```
 
-### 3. Composite Field (Currency)
-Uses the `currency_amount` composite type defined above.
+### 3. System Preconfigured Field (Currency)
+The concepts formerly known as "Composite Data Types" (e.g., Currency) are now just pre-configured nested fields.
 ```json
 {
   "name": "price",
   "label": "Price",
-  "type": "currency_amount",
-  "required": true,
-  "defaultValue": { "currency": "USD", "amount": 0 },
+  "type": "group",
+  "subFields": [
+    {
+      "name": "currency",
+      "label": "Currency",
+      "type": "enum",
+      "defaultValue": "USD",
+      "enumOptions": [
+          { "value": "USD", "label": "US Dollar" },
+          { "value": "EUR", "label": "Euro" }
+      ]
+    },
+    {
+      "name": "amount",
+      "label": "Amount",
+      "type": "float",
+      "required": true
+    }
+  ]
 }
 ```
 
-### 4. List of Strings (Tags)
+### 4. System Preconfigured Field (Media Asset)
+Previously a `media_object` Data Type, now a Nested Field.
 ```json
 {
-  "name": "tags",
-  "label": "Tags",
-  "type": "string",
-  "isList": true,
-  "required": false
-}
-```
-
-### 5. Enum Field (Status)
-```json
-{
-  "name": "status",
-  "label": "Status",
-  "type": "string",
-  "enumOptions": [
-    { "value": "draft", "label": "Draft" },
-    { "value": "published", "label": "Published" },
-    { "value": "archived", "label": "Archived" }
-  ],
-  "required": true
+  "name": "hero_image",
+  "label": "Hero Image",
+  "type": "group",
+  "subFields": [
+    { "name": "url", "type": "string", "label": "URL" },
+    { "name": "mimeType", "type": "string", "label": "MIME Type" },
+    { "name": "size", "type": "integer", "label": "Size" },
+    { "name": "altText", "type": "string", "label": "Alt Text" }
+  ]
 }
 ```
 
 ## Summary of Concerns
 
-| Concept | Responsibility | Example Properties |
-| :--- | :--- | :--- |
-| **DataType** | **Storage Structure** | `storage`, `primitiveType`, `properties` |
-| **Field** | **Integrity & Usage** | `required`, `unique`, `targetContentType` |
+| Concept      | Responsibility                    | Example Properties              |
+| :----------- | :-------------------------------- | :------------------------------ |
+| **DataType** | **Primitive Storage**             | `primitiveType`                 |
+| **Field**    | **Structure, Nesting, Integrity** | `type`, `subFields`, `required` |

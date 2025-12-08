@@ -17,17 +17,18 @@ The system supports content negotiation via the `Content-Type` header.
 #### 1. JSON (`application/json`)
 *   **Usage**: Default format for structured data.
 *   **Structure**:
+    *   **Structure**:
     *   Keys must match the `field.name` defined in the Content Type.
     *   Values must match the `DataType` primitive (e.g., string, number, boolean).
-    *   Composite types are represented as nested JSON objects.
+    *   **Nested Fields** (Groups) are represented as nested JSON objects.
 *   **Example**:
     ```json
     {
       "title": "My Article",
       "status": "published",
-      "price": {
-        "currency": "USD",
-        "amount": 19.99
+      "settings": {
+        "seo_title": "Best Article",
+        "private": false
       }
     }
     ```
@@ -37,13 +38,13 @@ The system supports content negotiation via the `Content-Type` header.
 *   **Structure**:
     *   Simple fields are sent as form parts.
     *   Files are sent as binary parts with filename metadata.
-    *   Nested objects (like `price`) should use bracket notation (e.g., `price[amount]`) or be sent as a stringified JSON part, depending on implementation preference.
+    *   Nested objects (like `settings`) should use bracket notation (e.g., `settings[seo_title]`) or be sent as a stringified JSON part, depending on implementation preference.
 
 #### 3. CSV / TSV (`text/csv`)
 *   **Usage**: Bulk import of flat data.
 *   **Limitations**:
     *   Best for simple, flat Content Types.
-    *   Complex/Nested data requires specific flattening conventions (e.g., `price.amount`).
+    *   **Nested Groups** require specific flattening conventions (e.g., `settings.seo_title`).
 
 ---
 
@@ -79,9 +80,9 @@ The structure supports multiple errors per field, as a single value might fail m
 ## 3. API Endpoints
 Standard endpoints for data input:
 
-| Method | Endpoint | Description | Supported Formats |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/content/:type_id` | Create a single record | JSON, Multipart |
-| `POST` | `/api/content/:type_id/bulk` | Create multiple records | JSON Array, CSV |
-| `PUT` | `/api/content/:type_id/:id` | Replace a record | JSON, Multipart |
-| `PATCH` | `/api/content/:type_id/:id` | Partially update a record | JSON |
+| Method  | Endpoint                     | Description               | Supported Formats |
+| :------ | :--------------------------- | :------------------------ | :---------------- |
+| `POST`  | `/api/content/:type_id`      | Create a single record    | JSON, Multipart   |
+| `POST`  | `/api/content/:type_id/bulk` | Create multiple records   | JSON Array, CSV   |
+| `PUT`   | `/api/content/:type_id/:id`  | Replace a record          | JSON, Multipart   |
+| `PATCH` | `/api/content/:type_id/:id`  | Partially update a record | JSON              |

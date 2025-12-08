@@ -21,13 +21,13 @@ The Content Type is defined by a JSON object containing metadata and a list of f
 ```
 
 ### Properties
-| Property | Type | Description |
-| :--- | :--- | :--- |
-| `id` | `string` | Unique identifier (snake_case recommended). Used in API URLs and database collections. |
-| `singularName` | `string` | Human-readable singular name (e.g., "Article"). Used for single record views. |
-| `pluralName` | `string` | Human-readable plural name (e.g., "Articles"). Used for list views and URL slugs. |
-| `description` | `string` | Optional description of the content type's purpose. |
-| `fields` | `Array<Field>` | An ordered list of Field objects. See [Data Type Design](data_types_design.md) for the detailed Field structure. |
+| Property       | Type           | Description                                                                                                      |
+| :------------- | :------------- | :--------------------------------------------------------------------------------------------------------------- |
+| `id`           | `string`       | Unique identifier (snake_case recommended). Used in API URLs and database collections.                           |
+| `singularName` | `string`       | Human-readable singular name (e.g., "Article"). Used for single record views.                                    |
+| `pluralName`   | `string`       | Human-readable plural name (e.g., "Articles"). Used for list views and URL slugs.                                |
+| `description`  | `string`       | Optional description of the content type's purpose.                                                              |
+| `fields`       | `Array<Field>` | An ordered list of Field objects. See [Data Type Design](data_types_design.md) for the detailed Field structure. |
 
 ## Example: Article Content Type
 Here is a complete example of how an "Article" content type would be described in JSON.
@@ -45,69 +45,55 @@ Here is a complete example of how an "Article" content type would be described i
       "type": "string",
       "isList": false,
       "required": true,
-      "unique": true,
-      "defaultValue": null,
-      "enumOptions": null,
-      "targetContentType": null
+      "unique": true
     },
     {
       "name": "slug",
       "label": "URL Slug",
       "type": "string",
-      "isList": false,
       "required": true,
-      "unique": true,
-      "defaultValue": null,
-      "enumOptions": null,
-      "targetContentType": null
+      "unique": true
     },
     {
       "name": "summary",
       "label": "Summary",
       "type": "string",
-      "isList": false,
-      "required": false,
-      "unique": false,
-      "defaultValue": null,
-      "enumOptions": null,
-      "targetContentType": null
+      "required": false
     },
     {
       "name": "content",
       "label": "Body Content",
       "type": "string",
-      "isList": false,
-      "required": true,
-      "unique": false,
-      "defaultValue": null,
-      "enumOptions": null,
-      "targetContentType": null
+      "required": true
     },
     {
       "name": "author",
       "label": "Author",
       "type": "reference",
-      "isList": false,
       "required": true,
-      "unique": false,
-      "defaultValue": null,
-      "enumOptions": null,
       "targetContentType": "person"
+    },
+    {
+      "name": "seo_settings",
+      "label": "SEO Settings",
+      "type": "group",
+      "required": false,
+      "subFields": [
+        { "name": "meta_title", "type": "string", "label": "Meta Title" },
+        { "name": "meta_description", "type": "string", "label": "Meta Description" }
+      ]
     },
     {
       "name": "status",
       "label": "Publish Status",
-      "type": "string",
-      "isList": false,
+      "type": "enum",
       "required": true,
-      "unique": false,
       "defaultValue": "draft",
       "enumOptions": [
         { "value": "draft", "label": "Draft" },
         { "value": "published", "label": "Published" },
         { "value": "archived", "label": "Archived" }
-      ],
-      "targetContentType": null
+      ]
     },
     {
       "name": "tags",
@@ -115,10 +101,7 @@ Here is a complete example of how an "Article" content type would be described i
       "type": "string",
       "isList": true,
       "required": false,
-      "unique": false,
-      "defaultValue": [],
-      "enumOptions": null,
-      "targetContentType": null
+      "defaultValue": []
     }
   ]
 }
@@ -127,10 +110,10 @@ Here is a complete example of how an "Article" content type would be described i
 ## System Fields
 In addition to the user-defined fields above, every Content Type automatically includes the following system fields. These are managed by the backend and **do not** need to be defined in the JSON.
 
-| Field Name | Type | Description |
-| :--- | :--- | :--- |
-| `id` | `string` | Unique Record ID (UUID). |
-| `created_at` | `datetime` | Timestamp when the record was created. |
-| `updated_at` | `datetime` | Timestamp when the record was last updated. |
-| `created_by` | `reference` | Reference to the User who created the record. |
+| Field Name   | Type        | Description                                        |
+| :----------- | :---------- | :------------------------------------------------- |
+| `id`         | `string`    | Unique Record ID (UUID).                           |
+| `created_at` | `datetime`  | Timestamp when the record was created.             |
+| `updated_at` | `datetime`  | Timestamp when the record was last updated.        |
+| `created_by` | `reference` | Reference to the User who created the record.      |
 | `updated_by` | `reference` | Reference to the User who last updated the record. |
